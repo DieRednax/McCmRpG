@@ -20,15 +20,19 @@ public class McCmRpG {
 //                            )
 //                    )
 //            ).generate();
-            new Modifier(
+            Modifier modifier = new Modifier(
                     Path.of("C:\\Users\\xtdel\\IdeaProjects\\McCmRpG\\app_tests"),
                     "TestPack", "test_pack",
                     new CustomModel(
-                            CustomModel.ModelType.ITEM, "emerald",
-                            CustomModel.ModelType.ITEM, "emerald_biotic",
-                            Path.of("C:\\Users\\xtdel\\IdeaProjects\\McCmRpG\\app_tests\\textures\\emerald_coin.png")
+                            CustomModel.ModelType.BLOCK, "carved_pumpkin",
+                            CustomModel.ModelType.BLOCK, "christmas_hat",
+                            Path.of("C:\\Users\\xtdel\\IdeaProjects\\McCmRpG\\app_tests\\models\\christmas_hat.json"),
+                            Path.of("C:\\Users\\xtdel\\IdeaProjects\\McCmRpG\\app_tests\\textures\\christmas_hat.png")
                     )
-            ).add();
+            );
+
+//            modifier.remove();
+            modifier.add();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +30,7 @@ public class Modifier {
     }
 
     public void add() throws IOException {
+        //textures
         final Path texturePath = packPath.resolve(String.format("assets/minecraft/textures/%s/custom/%s.png",
                         customModel.getType(),
                         customModel.getIdentifier()));
@@ -39,6 +39,7 @@ public class Modifier {
                 customModel.getTexturePath(),
                 texturePath);
 
+        //model
         final Path modelPath = packPath.resolve(
                 String.format("assets/%s/models/item/%s.json", nameSpace, customModel.getIdentifier())
         );
@@ -49,6 +50,7 @@ public class Modifier {
                         String.format("assets/%s/models/item/%s.json", nameSpace, customModel.getIdentifier())
                 ));
 
+        //model reference
         final Path modelFilePath = packPath.resolve(String.format("assets/%s/items/%s.json", nameSpace, customModel.getIdentifier()));
         Files.createDirectories(modelFilePath.getParent());
         Files.writeString(
@@ -63,6 +65,7 @@ public class Modifier {
                         """, nameSpace, customModel.getIdentifier()
                 ));
 
+        //overrider
         final Path overriderPath = packPath.resolve(String.format("assets/%s/models/item/%s.json", nameSpace, customModel.getOverrider()));
         if (!Files.exists(overriderPath)) {
             Files.createDirectories(overriderPath.getParent());
@@ -91,6 +94,50 @@ public class Modifier {
             }
             newOverrides.add(new Override(Map.of("custom_model_data", i), "custom/" + customModel.getIdentifier()));
             Overrider newContentOverrider = new Overrider(prevContentOverrider.getParent(),newOverrides);
+            String content = new GsonBuilder().setPrettyPrinting().create().toJson(newContentOverrider);
+            Files.writeString(overriderPath, content);
+        }
+    }
+    void remove() throws IOException {
+        //texture
+        Files.deleteIfExists(packPath.resolve(String.format("assets/minecraft/textures/%s/custom/%s.png",
+                customModel.getType(),
+                customModel.getIdentifier())));
+
+        //model
+        Files.deleteIfExists(packPath.resolve(
+                String.format("assets/%s/models/item/%s.json", nameSpace, customModel.getIdentifier())
+        ));
+
+        //model reference
+        Files.deleteIfExists(packPath.resolve(
+                String.format("assets/%s/items/%s.json", nameSpace, customModel.getIdentifier())
+        ));
+
+        //overrider
+        final Path overriderPath = packPath.resolve(String.format("assets/%s/models/item/%s.json", nameSpace, customModel.getOverrider()));
+        if (!Files.exists(overriderPath)) {
+            return;
+        }
+        String prevContent = Files.readString(overriderPath);
+        Gson gson = new Gson();
+        Overrider prevContentOverrider = gson.fromJson(prevContent, Overrider.class);
+
+        if (prevContentOverrider.getOverrides().size() < 2) {
+            Files.delete(overriderPath);
+        } else {
+            List<Override> newOverrides = new ArrayList<>();
+            int i = 1;
+
+            for (Override override : prevContentOverrider.getOverrides()) {
+                if (!override.getModel().equals("custom/" + customModel.getIdentifier())) {
+                    newOverrides.add(new Override(Map.of("custom_model_data", i), override.getModel()));
+
+                    i++;
+                }
+            }
+
+            Overrider newContentOverrider = new Overrider(prevContentOverrider.getParent(), newOverrides);
             String content = new GsonBuilder().setPrettyPrinting().create().toJson(newContentOverrider);
             Files.writeString(overriderPath, content);
         }
